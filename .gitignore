@@ -1,0 +1,30 @@
+# Go binary and executables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test and coverage files
+*.test
+*.out
+*.prof
+
+# Go generated files
+/bin/
+/vendor/
+
+# Go dependency files
+/go.sum
+/go.mod
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Compiled output
+/dist/
+
+# Log files
+*.log
+
