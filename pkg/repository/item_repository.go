@@ -3,7 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"github.com/lukk5/goAPI/pkg/models"
+	"goAPI/pkg/models"
 )
 
 // ItemRepository defines the methods that an item repository should have
@@ -20,7 +20,7 @@ type ItemRepo struct {
 
 // GetItems returns a list of items from the in-memory repository
 func (r *ItemRepo) GetItems() ([]models.Item, error) {
-	rows, err := r.db.Query(`SELECT "ID", "Name"
+	rows, err := r.db.Query(`SELECT "ID", "NAME"
 	FROM public."Item";`)
 	if err != nil {
 		return nil, fmt.Errorf("error getting items: %v", err)
@@ -47,7 +47,7 @@ func (r *ItemRepo) GetItems() ([]models.Item, error) {
 
 // GetItemByID returns the item with the specified ID
 func (r *ItemRepo) GetItemByID(id int) (*models.Item, error) {
-	row := r.db.QueryRow(`SELECT "ID", "Name"
+	row := r.db.QueryRow(`SELECT "ID", "NAME"
 	FROM public."Item" WHERE "ID" = $1;`, id)
 	var item models.Item
 	switch err := row.Scan(&item.ID, &item.Name); err {
