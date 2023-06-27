@@ -4,22 +4,40 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"goAPI/pkg/extensions"
+	"goAPI/pkg/handlers"
 
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
+type App struct {
+	Router      *gin.Engine
+	ItemHandler *handlers.ItemHandler
+}
 
-	router := gin.Default()
+func (a *App) Initialize() {
+	a.Router = gin.Default()
+	a.ItemHandler = extensions.InitializeItemHandler()
 
-	itemHandler := extensions.InitializeItemHandler()
+	a.initializeRoutes()
+}
+
+func (a *App) initializeRoutes() {
 
 	// Serve Swagger documentation
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	a.Router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	router.GET("/item", itemHandler.GetItemsHandler)
-	router.GET("/item/:id", itemHandler.GetItemByIdHandler)
-	router.POST("/item/add", itemHandler.AddItemHandler)
+	// Item routes
+	a.Router.GET("/item", a.ItemHandler.GetItemsHandler)
+	a.Router.GET("/item/:id", a.ItemHandler.GetItemByIdHandler)
+	a.Router.POST("/item/add", a.ItemHandler.AddItemHandler)
+}
 
-	router.Run(":8080")
+func (a *App) Run(addr string) {
+	a.Router.Run(addr)
+}
+
+func main() {
+	app := &App{}
+	app.Initialize()
+	app.Run(":8080")
 }
