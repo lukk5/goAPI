@@ -22,19 +22,18 @@ type ItemHandler struct {
 // @Param item body models.Item true "Add item"
 // @Success 200 {object} models.Item
 // @Router /items [post]
-func (h *ItemHandler) AddItemHandler(c *gin.Context) error {
+func (h *ItemHandler) AddItemHandler(c *gin.Context) {
 	var newItem models.Item
 	if err := c.ShouldBindJSON(&newItem); err != nil {
-		return err
+		panic(err)
 	}
 
 	item, err := h.Repo.AddItem(newItem)
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	c.JSON(http.StatusCreated, item)
-	return nil
 }
 
 // GetItemsHandler @Summary Get all items
@@ -43,13 +42,12 @@ func (h *ItemHandler) AddItemHandler(c *gin.Context) error {
 // @Produce  json
 // @Success 200 {array} models.Item
 // @Router /items [
-func (h *ItemHandler) GetItemsHandler(c *gin.Context) error {
+func (h *ItemHandler) GetItemsHandler(c *gin.Context) {
 	items, err := h.Repo.GetItems()
 	if err != nil {
-		return err
+		panic(err)
 	}
 	c.JSON(http.StatusOK, items)
-	return nil
 }
 
 // GetItemByIdHandler @Summary Get an item by ID
@@ -59,23 +57,22 @@ func (h *ItemHandler) GetItemsHandler(c *gin.Context) error {
 // @Param id path int true "Item ID"
 // @Success 200 {object} models.Item
 // @Router /items/{id} [get]
-func (h *ItemHandler) GetItemByIdHandler(c *gin.Context) error {
+func (h *ItemHandler) GetItemByIdHandler(c *gin.Context) {
 	idStr := c.Param("id")
 
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	item, err := h.Repo.GetItemByID(id)
 
 	if err != nil {
-		return err
+		panic(err)
 	}
 
 	c.JSON(http.StatusOK, item)
-	return nil
 }
 
 // NewItemHandler DI

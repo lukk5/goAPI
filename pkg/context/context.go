@@ -1,10 +1,11 @@
 package context
 
 import (
-	"database/sql"
 	"fmt"
+
 	_ "github.com/lib/pq"
-	"log"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 const ( // for now, TODO: move to configs
@@ -15,17 +16,14 @@ const ( // for now, TODO: move to configs
 	dbname   = "goDB"
 )
 
-func NewDbConnection() *sql.DB {
+func NewDbConnection() *gorm.DB {
+
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
-	db, err := sql.Open("postgres", connStr)
 
+	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
 	if err != nil {
-		defer func(db *sql.DB) {
-			_ = db.Close()
-		}(db)
-		log.Fatal(err)
-		return nil
+		panic("Failed to connect to the database")
 	}
 	return db
 }

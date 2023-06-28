@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"database/sql"
-	"fmt"
 	"goAPI/pkg/models"
+
+	"gorm.io/gorm"
 )
 
 // ItemRepository defines the methods that an item repository should have
@@ -11,71 +11,58 @@ type ItemRepository interface {
 	GetItems() ([]models.Item, error)
 	GetItemByID(id int) (*models.Item, error)
 	AddItem(item models.Item) (*models.Item, error)
+	RemoveItem(id int) error
+	UpdateItem(item *models.Item) (*models.Item, error)
 }
 
 // ItemRepo Implements the interface
 type ItemRepo struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-// GetItems returns a list of items from the in-memory repository
+// RemoveItem removes item from the database
+func (r *ItemRepo) RemoveItem(id int) error {
+	if err := r.db.Delete(&models.Item{}, id).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetItems returns a list of items from the database
 func (r *ItemRepo) GetItems() ([]models.Item, error) {
-	rows, err := r.db.Query(`SELECT "ID", "NAME"
-	FROM public."Item";`)
-	if err != nil {
-		return nil, fmt.Errorf("error getting items: %v", err)
-	}
-	defer rows.Close()
-
 	var items []models.Item
-	for rows.Next() {
-		var item models.Item
-		if err := rows.Scan(&item.ID, &item.Name); err != nil {
-			return nil, fmt.Errorf("error scanning row: %v", err)
-		}
-
-		items = append(items, item)
+	if err := r.db.Find(&items).Error; err != nil {
+		return nil, err
 	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("error reading rows: %v", err)
-	}
-
 	return items, nil
-
 }
 
 // GetItemByID returns the item with the specified ID
 func (r *ItemRepo) GetItemByID(id int) (*models.Item, error) {
-	row := r.db.QueryRow(`SELECT "ID", "NAME"
-	FROM public."Item" WHERE "ID" = $1;`, id)
 	var item models.Item
-	switch err := row.Scan(&item.ID, &item.Name); err {
-	case sql.ErrNoRows:
-		return nil, fmt.Errorf("item was not found")
-	case nil:
-		return &item, nil
-	default:
-		return nil, fmt.Errorf("error scanning row: %v", err)
+	if err := r.db.First(&item, id).Error; err != nil {
+		return nil, err
 	}
+	return &item, nil
 }
 
 // AddItem returns the item with the specified ID
 func (r *ItemRepo) AddItem(item models.Item) (*models.Item, error) {
-	sqlStatement := `INSERT INTO public."Item"("Name")
-	VALUES ($1) RETURNING "ID";`
-
-	id := 0
-	err := r.db.QueryRow(sqlStatement, item.Name).Scan(&id)
-	if err != nil {
+	if err := r.db.Create(&item).Error; err != nil {
 		return nil, err
 	}
-
-	item.ID = id
 	return &item, nil
 }
 
+// UpdateItem updates the existing item in the database
+func (r *ItemRepo) UpdateItem(item *models.Item) (*models.Item, error) {
+	if err := r.db.Save(item).Error; err != nil {
+		return nil, err
+	}
+	return item, nil
+}
+
 // DI
-func NewItemRepo(db *sql.DB) *ItemRepo {
+func NewItemRepo(db *gorm.DB) *ItemRepo {
 	return &ItemRepo{db: db}
 }
