@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
 	"goAPI/pkg/repository"
+
+	"github.com/gin-gonic/gin"
 )
 
 type ItemHandler struct {
@@ -21,19 +22,19 @@ type ItemHandler struct {
 // @Param item body models.Item true "Add item"
 // @Success 200 {object} models.Item
 // @Router /items [post]
-func (h *ItemHandler) AddItemHandler(c *gin.Context) {
+func (h *ItemHandler) AddItemHandler(c *gin.Context) error {
 	var newItem models.Item
 	if err := c.ShouldBindJSON(&newItem); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return err
 	}
 
 	item, err := h.Repo.AddItem(newItem)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return err
 	}
+
 	c.JSON(http.StatusCreated, item)
+	return nil
 }
 
 // GetItemsHandler @Summary Get all items
@@ -42,13 +43,13 @@ func (h *ItemHandler) AddItemHandler(c *gin.Context) {
 // @Produce  json
 // @Success 200 {array} models.Item
 // @Router /items [
-func (h *ItemHandler) GetItemsHandler(c *gin.Context) {
+func (h *ItemHandler) GetItemsHandler(c *gin.Context) error {
 	items, err := h.Repo.GetItems()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get items"})
-		return
+		return err
 	}
 	c.JSON(http.StatusOK, items)
+	return nil
 }
 
 // GetItemByIdHandler @Summary Get an item by ID
@@ -58,24 +59,23 @@ func (h *ItemHandler) GetItemsHandler(c *gin.Context) {
 // @Param id path int true "Item ID"
 // @Success 200 {object} models.Item
 // @Router /items/{id} [get]
-func (h *ItemHandler) GetItemByIdHandler(c *gin.Context) {
+func (h *ItemHandler) GetItemByIdHandler(c *gin.Context) error {
 	idStr := c.Param("id")
 
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item ID format"})
-		return
+		return err
 	}
 
 	item, err := h.Repo.GetItemByID(id)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get item"})
-		return
+		return err
 	}
 
 	c.JSON(http.StatusOK, item)
+	return nil
 }
 
 // NewItemHandler DI

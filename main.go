@@ -1,10 +1,12 @@
 package main
 
 import (
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"goAPI/pkg/extensions"
 	"goAPI/pkg/handlers"
+	"goAPI/pkg/middlewares"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,6 +27,9 @@ func (a *App) initializeRoutes() {
 
 	// Serve Swagger documentation
 	a.Router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Apply exception handling middleware
+	a.Router.Use(middlewares.ExceptionHandler)
 
 	// Item routes
 	a.Router.GET("/item", a.ItemHandler.GetItemsHandler)
